@@ -1,24 +1,24 @@
 package harmonic
 
 import (
-	"math"
 	"errors"
+	"math"
 )
 
-// SelectService implements the routing logic to the cluster of downstream services. On 
+// SelectService implements the routing logic to the cluster of downstream services. On
 // first try, an error log lookup is done to determine the service-wise error count and effective
 // error is calculated. If no error found for any service, random service selection (equal probability)
-// is done, else weighted random service selection is done, where weights are inversely proportional 
+// is done, else weighted random service selection is done, where weights are inversely proportional
 // to error count on the particular service. If the request to the selected service fails, round robin
 // selection is done to deterministically select the next service.
 func SelectService(cs *ClusterState, retryindex int, prevservice string) (string, error) {
 
 	//invalid num of endpoints
-	if cs.numservices == 0{
+	if cs.numservices == 0 {
 		return "", errors.New("harmonic: servicelist is empty")
 	}
 
-	// single endpoint 
+	// single endpoint
 	if cs.numservices == 1 {
 		return getIndexedService(0, cs)
 	}
@@ -29,7 +29,7 @@ func SelectService(cs *ClusterState, retryindex int, prevservice string) (string
 		maxErr := uint64(0)
 		for _, svc := range cs.servicelist {
 			errCnt := cs.errormap[svc]
-			effectiveErr := uint64(math.Floor(math.Pow(float64(1 + errCnt), 1.5)))
+			effectiveErr := uint64(math.Floor(math.Pow(float64(1+errCnt), 1.5)))
 			if effectiveErr >= maxErr {
 				maxErr = effectiveErr
 			}
@@ -41,7 +41,7 @@ func SelectService(cs *ClusterState, retryindex int, prevservice string) (string
 			prefixes := make([]float64, cs.numservices)
 			for i, svc := range cs.servicelist {
 				errCnt := cs.errormap[svc]
-				weights[i] = math.Ceil(float64(maxErr) / float64(errCnt + 1))
+				weights[i] = math.Ceil(float64(maxErr) / float64(errCnt+1))
 			}
 			for i, _ := range weights {
 				if i == 0 {
@@ -51,7 +51,7 @@ func SelectService(cs *ClusterState, retryindex int, prevservice string) (string
 				}
 			}
 			prLen := len(prefixes) - 1
-			randx := randomize64(1, int64(prefixes[prLen]) + 1)
+			randx := randomize64(1, int64(prefixes[prLen])+1)
 			ceil := findCeilIn(randx, prefixes, 0, prLen)
 			if ceil >= 0 {
 				return getIndexedService(ceil, cs)
@@ -60,8 +60,8 @@ func SelectService(cs *ClusterState, retryindex int, prevservice string) (string
 		return getIndexedService(randomize(0, cs.numservices), cs)
 	} else {
 		prevserviceindex := -1
-		for psi, svc := range cs.servicelist{
-			if svc == prevservice{
+		for psi, svc := range cs.servicelist {
+			if svc == prevservice {
 				prevserviceindex = psi
 			}
 		}
@@ -94,9 +94,9 @@ func findCeilIn(randx int64, prefixes []float64, start int, end int) int {
 
 // getIndexedService returns service name at an index. Error is returned
 // if index is found to be invalid.
-func getIndexedService(index int, cs *ClusterState) (string, error){
+func getIndexedService(index int, cs *ClusterState) (string, error) {
 
-	if index < 0 || index >= cs.numservices{
+	if index < 0 || index >= cs.numservices {
 		return "", errors.New("harmonic: service index out of bounds")
 	}
 

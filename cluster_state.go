@@ -1,83 +1,96 @@
 package harmonic
 
 import (
-	"sync"
 	"errors"
+	"sync"
 )
 
 type ClusterState struct {
-	servicelist             []string
-	numservices		int
-	errormap                map[string]uint64
-	remutex                 sync.Mutex
+	servicelist []string
+	numservices int
+	errormap    map[string]uint64
+	remutex     sync.Mutex
 }
 
-// InitClusterState initializes cluster state with user provided 
+// InitClusterState initializes cluster state with user provided
 // servicelist, and zeroing error for each service.
 func InitClusterState(servicelist []string) (*ClusterState, error) {
 
-	if servicelist == nil || len(servicelist) == 0{
+	if servicelist == nil || len(servicelist) == 0 {
 		return nil, errors.New("harmonic: invalid service list")
 	}
 
 	errormap := make(map[string]uint64)
-	for _, svc := range servicelist{
+	for _, svc := range servicelist {
 		errormap[svc] = 0
 	}
 
 	return &ClusterState{
 		servicelist: servicelist,
 		numservices: len(servicelist),
-		errormap: errormap,
+		errormap:    errormap,
 	}, nil
 }
 
+// GetError returns current errorcount for a service.
+func (cs *ClusterState) GetError(service string) (uint64, error) {
+
+	cs.remutex.Lock()
+	defer cs.remutex.Unlock()
+
+	if _, ok := cs.errormap[service]; ok {
+		return cs.errormap[service], nil
+	}
+	return 0, errors.New("harmonic: service " + service + " not found")
+}
+
 // IncrementError increments errorcount by 1 for a service.
-func (cp *ClusterState) IncrementError(service string) error{
+func (cs *ClusterState) IncrementError(service string) error {
 
-	cp.remutex.Lock()
-	defer cp.remutex.Unlock()
+	cs.remutex.Lock()
+	defer cs.remutex.Unlock()
 
-	if _, ok := cp.errormap[service];ok{
-		cp.errormap[service]++
+	if _, ok := cs.errormap[service]; ok {
+		cs.errormap[service]++
 		return nil
 	}
 	return errors.New("harmonic: service " + service + " not found")
 }
 
 // UpdateError updates user provided errorcount for a service.
-func (cp *ClusterState) UpdateError(service string, errorcount uint64) error{
+func (cs *ClusterState) UpdateError(service string, errorcount uint64) error {
 
-	cp.remutex.Lock()
-	defer cp.remutex.Unlock()
+	cs.remutex.Lock()
+	defer cs.remutex.Unlock()
 
-	if _, ok := cp.errormap[service];ok{
-		cp.errormap[service] = errorcount
+	if _, ok := cs.errormap[service]; ok {
+		cs.errormap[service] = errorcount
 		return nil
 	}
 	return errors.New("harmonic: service " + service + " not found")
 }
 
 // ResetError resets errorcount for a service.
-func (cp *ClusterState) ResetError(service string) error{
+func (cs *ClusterState) ResetError(service string) error {
 
-	cp.remutex.Lock()
-	defer cp.remutex.Unlock()
+	cs.remutex.Lock()
+	defer cs.remutex.Unlock()
 
-	if _, ok := cp.errormap[service];ok{
-		cp.errormap[service] = 0
+	if _, ok := cs.errormap[service]; ok {
+		cs.errormap[service] = 0
 		return nil
 	}
 	return errors.New("harmonic: service " + service + " not found")
 }
 
 // ResetAllErrors resets errorcount for all services.
-func (cp *ClusterState) ResetAllErrors(){
+func (cs *ClusterState) ResetAllErrors() error {
 
-	cp.remutex.Lock()
-	defer cp.remutex.Unlock()
+	cs.remutex.Lock()
+	defer cs.remutex.Unlock()
 
-	for k, _ := range cp.errormap{
-		cp.errormap[k] = 0
+	for k, _ := range cs.errormap {
+		cs.errormap[k] = 0
 	}
+	return nil
 }
