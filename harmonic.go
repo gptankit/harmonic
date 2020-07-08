@@ -5,12 +5,12 @@ import (
 	"errors"
 )
 
-// SelectService implements the routing logic to the cluster of downstream nodes. On 
-// first try, an error log lookup is done to determine the node-wise error count and effective
-// error is calculated. If no error found for any nodes, random node selection (equal probability)
-// is done, else weighted random node selection is done, where weights are inversely proportional 
-// to error count on the particular nodes. If the request to the selected node fails, round robin
-// selection is done to deterministically select the next node.
+// SelectService implements the routing logic to the cluster of downstream services. On 
+// first try, an error log lookup is done to determine the service-wise error count and effective
+// error is calculated. If no error found for any service, random service selection (equal probability)
+// is done, else weighted random service selection is done, where weights are inversely proportional 
+// to error count on the particular service. If the request to the selected service fails, round robin
+// selection is done to deterministically select the next service.
 func SelectService(cs *ClusterState, retryindex int, prevservice string) (string, error) {
 
 	//invalid num of endpoints
@@ -92,6 +92,8 @@ func findCeilIn(randx int64, prefixes []float64, start int, end int) int {
 	return -1
 }
 
+// getIndexedService returns service name at an index. Error is returned
+// if index is found to be invalid.
 func getIndexedService(index int, cs *ClusterState) (string, error){
 
 	if index < 0 || index >= cs.numservices{

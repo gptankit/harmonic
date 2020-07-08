@@ -94,3 +94,89 @@ func TestServiceIndexWithinBoundRn(t *testing.T) {
 		}
 	}
 }
+
+func TestInitClusterState(t *testing.T) {
+
+	_, err := InitClusterState([]string{"s0","s1","s2"})
+	if err != nil{
+		t.Errorf("init cluster failed")
+	}
+}
+
+func TestIncrementError(t *testing.T){
+
+	cs, err := InitClusterState([]string{"s0","s1","s2"})
+	if err != nil{
+		return
+	}
+
+	err1 := cs.IncrementError("s1")
+	if err1 != nil{
+		t.Errorf("increment error failed")
+	}
+
+	err2 := cs.IncrementError("s5")
+	if err2 == nil{
+		t.Errorf("non-existent service error incremented")
+	}
+}
+
+func TestUpdateError(t *testing.T){
+
+	cs, err := InitClusterState([]string{"s0","s1","s2"})
+	if err != nil{
+		return
+	}
+
+	err1 := cs.UpdateError("s1", 10)
+	if err1 != nil{
+		t.Errorf("update error failed")
+	}
+
+	err2 := cs.UpdateError("s5", 10)
+	if err2 == nil{
+		t.Errorf("non-existent service error updated")
+	}
+}
+
+func TestResetError(t *testing.T){
+
+	cs, err := InitClusterState([]string{"s0","s1","s2"})
+	if err != nil{
+		return
+	}
+
+	err1 := cs.ResetError("s1")
+	if err1 != nil{
+		t.Errorf("reset error failed")
+	}
+
+	err2 := cs.ResetError("s5")
+	if err2 == nil{
+		t.Errorf("non-existent service error reset")
+	}
+}
+
+func BenchmarkSelectServiceR1(b *testing.B){
+
+	cs, err := InitClusterState([]string{"s0","s1","s2"})
+	if err != nil{
+		return
+	}
+
+	for i:=0;i<b.N;i++{
+		SelectService(cs, 0, "s1") // first try
+	}
+}
+
+func BenchmarkSelectServiceRn(b *testing.B){
+
+	cs, err := InitClusterState([]string{"s0","s1","s2"})
+	if err != nil{
+		return
+	}
+
+	for i:=0;i<b.N;i++{
+		SelectService(cs, 2, "s1") // subsequent try
+	}
+}
