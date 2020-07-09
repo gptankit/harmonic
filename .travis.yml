@@ -1,0 +1,15 @@
+language: go
+go_import_path: github.com/gptankit/harmonic
+git:
+  depth: 1
+env:
+  - GO111MODULE=on
+go: 
+  - 1.11.x 
+  - 1.12.x
+  - 1.13.x
+  - 1.14.x
+os:
+  - linux
+script:
+  - make
