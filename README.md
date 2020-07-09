@@ -4,23 +4,23 @@ Harmonic is the request dispatch algorithm powering ServiceQ (https://github.com
 
 ## Introduction
 
-Assume a cluster of homogenous services that can serve user requests for a resource. One or more services might exhibit errors during their run ranging from connectivity loss, latency, misconfigurations and so on. Harmonic's role in this scenario is to select a service that has the best chance of processing an incoming request thus improving the total probability of success for a group of requests.
+Assume a cluster of homogenous services that can serve user requests for a resource. One or more services might exhibit errors during their run ranging from connectivity loss, latency, misconfigurations and so on. Harmonic's role, in this scenario, is to select a service that has the best chance of processing an incoming request, thus improving the total probability of success for a group of requests.
 
 <b>How To Get</b>
 
 <pre>
-go get github/gptankit/harmonic
+go get github.com/gptankit/harmonic
 </pre>
 
 Then, import the module - 
 
 <pre>
-import "github/gptankit/harmonic"
+import "github.com/gptankit/harmonic"
 </pre>
 
 <b>How To Use</b>
 
-Harmonic works on user supplied cluster state which includes a list of services (can be IP, qualified url or any unique identifier). By default, harmonic will zero the error count on each service and return a reference to cluster state, that can further be used to manage error counts.
+Harmonic works on user-supplied cluster state which includes a list of services (can be IP, fully-qualified URL or any unique identifier). By default, harmonic will zero the error count on each service and return a reference to cluster state, that can further be used to manage error counts.
 
 <pre>
 // Initialize cluster state
@@ -46,6 +46,8 @@ cs.IncrementError(svc)
 svc, _ := harmonic.SelectService(cs, 1, svc)
 </pre>
 
+<b>Note</b>: What constitutes a <i>success</i> or <i>failure</i> response will depend on the type of application and use case, and needs to be defined accordingly by the application owner.
+
 A complete example is added in <b>sample</b> folder.
 
 <b>Error Management</b>
@@ -62,7 +64,7 @@ func (cs *ClusterState) ResetAllErrors() error
 
 ## Benchmarks
 
-Go bench results (OS: linux)
+Go bench results (env: linux/amd64)
 
 Call to <i>SelectService</i>, first try - 
 
