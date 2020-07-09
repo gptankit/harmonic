@@ -1,6 +1,6 @@
-# Harmonic
+# Harmonic [![Build Status](https://travis-ci.com/gptankit/harmonic.svg?branch=master)](https://travis-ci.com/gptankit/harmonic) [![GoDoc](https://godoc.org/github.com/gptankit/harmonic?status.svg)](https://pkg.go.dev/github.com/gptankit/harmonic?tab=doc)
 
-Harmonic is the request dispatch algo powering ServiceQ (https://github.com/gptankit/serviceq). It is exposed in this repo as a package with enhanced support for initializing cluster state and error management.
+Harmonic is the request dispatch algorithm powering ServiceQ (https://github.com/gptankit/serviceq). It is exposed in this repository as a package with enhanced support for initializing cluster state and error management.
 
 ## Introduction
 
