@@ -20,29 +20,34 @@ func SelectService(cs *ClusterState, retryindex int, prevservice string) (string
 
 	// single endpoint
 	if cs.numservices == 1 {
-		return getIndexedService(0, cs)
+		return getIndexedService(cs, 0)
 	}
 
 	if retryindex == 0 { // first try
 		cs.remutex.Lock()
 		defer cs.remutex.Unlock()
-		maxErr := uint64(0)
+
+		maxerr := uint64(0)
+
 		for _, svc := range cs.servicelist {
-			errCnt := cs.errormap[svc]
-			effectiveErr := uint64(math.Floor(math.Pow(float64(1+errCnt), 1.5)))
-			if effectiveErr >= maxErr {
-				maxErr = effectiveErr
+			errcnt := cs.errormap[svc]
+			effectiveerr := uint64(math.Floor(math.Pow(float64(1+errcnt), 1.5)))
+			if effectiveerr >= maxerr {
+				maxerr = effectiveerr
 			}
 		}
-		if maxErr == 1 {
-			return getIndexedService(randomize(0, cs.numservices), cs)
+
+		if maxerr == 1 {
+			return getIndexedService(cs, randomize(0, cs.numservices))
 		} else {
 			weights := make([]float64, cs.numservices)
 			prefixes := make([]float64, cs.numservices)
+
 			for i, svc := range cs.servicelist {
-				errCnt := cs.errormap[svc]
-				weights[i] = math.Ceil(float64(maxErr) / float64(errCnt+1))
+				errcnt := cs.errormap[svc]
+				weights[i] = math.Ceil(float64(maxerr) / float64(errcnt+1))
 			}
+
 			for i, _ := range weights {
 				if i == 0 {
 					prefixes[i] = weights[i]
@@ -50,22 +55,26 @@ func SelectService(cs *ClusterState, retryindex int, prevservice string) (string
 					prefixes[i] = weights[i] + prefixes[i-1]
 				}
 			}
-			prLen := len(prefixes) - 1
-			randx := randomize64(1, int64(prefixes[prLen])+1)
-			ceil := findCeilIn(randx, prefixes, 0, prLen)
+
+			prlen := cs.numservices - 1
+			randx := randomize64(1, int64(prefixes[prlen])+1)
+			ceil := findCeilIn(randx, prefixes, 0, prlen)
+
 			if ceil >= 0 {
-				return getIndexedService(ceil, cs)
+				return getIndexedService(cs, ceil)
 			}
 		}
-		return getIndexedService(randomize(0, cs.numservices), cs)
-	} else {
+
+		return getIndexedService(cs, randomize(0, cs.numservices))
+	} else { // retries
 		prevserviceindex := -1
 		for psi, svc := range cs.servicelist {
 			if svc == prevservice {
 				prevserviceindex = psi
 			}
 		}
-		return getIndexedService(roundrobin(cs.numservices, prevserviceindex), cs)
+
+		return getIndexedService(cs, roundrobin(cs.numservices, prevserviceindex))
 	}
 }
 
@@ -94,7 +103,7 @@ func findCeilIn(randx int64, prefixes []float64, start int, end int) int {
 
 // getIndexedService returns service name at an index. Error is returned
 // if index is found to be invalid.
-func getIndexedService(index int, cs *ClusterState) (string, error) {
+func getIndexedService(cs *ClusterState, index int) (string, error) {
 
 	if index < 0 || index >= cs.numservices {
 		return "", errors.New("harmonic: service index out of bounds")

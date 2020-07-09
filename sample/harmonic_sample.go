@@ -12,12 +12,12 @@ func main() {
 		return
 	}
 
-	retryIndex, retryLimit, svc := 0, len(servicelist)-1, ""
+	retryindex, retrylimit, svc := 0, len(servicelist)-1, ""
 
-	for retryIndex <= retryLimit {
+	for retryindex <= retrylimit {
 
 		// call SelectService
-		svc, _ = harmonic.SelectService(cs, retryIndex, svc)
+		svc, _ = harmonic.SelectService(cs, retryindex, svc)
 
 		// send request to resource located at svc
 		response := makeRequestToSvc()
@@ -28,7 +28,7 @@ func main() {
 			break
 		} else { // if failed, then increment error for service and retryIndex
 			cs.IncrementError(svc)
-			retryIndex++
+			retryindex++
 		}
 
 		// optional (test for current errorcount for svc)
