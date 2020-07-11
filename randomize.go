@@ -14,9 +14,7 @@ func randomize(init int, set int) int {
 	}
 
 	rand.Seed(time.Now().UTC().UnixNano())
-	choice := rand.Intn(set-init) + init
-
-	return choice
+	return rand.Intn(set-init) + init
 }
 
 // randomize64 is a 64-bit version of randomize().
@@ -27,7 +25,5 @@ func randomize64(init int64, set int64) int64 {
 	}
 
 	rand.Seed(time.Now().UTC().UnixNano())
-	choice := rand.Int63n(set-init) + init
-
-	return choice
+	return rand.Int63n(set-init) + init
 }

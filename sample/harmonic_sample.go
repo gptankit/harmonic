@@ -6,8 +6,8 @@ import (
 
 func main() {
 
-	servicelist := []string{"s0", "s1", "s2"}
-	cs, err := harmonic.InitClusterState(servicelist)
+	serviceList := []string{"s0", "s1", "s2"}
+	cs, err := harmonic.InitClusterState(serviceList)
 	if err != nil {
 		return
 	}
@@ -16,14 +16,14 @@ func main() {
 	// req := getRequest()
 
 	// initialize parameters
-	retryindex, svc := 0, ""
+	retryIndex, svc := 0, ""
 	// retrylimit is recommended to be equal to size of service list
-	retrylimit := len(cs.GetServices())
+	retryLimit := len(cs.GetServices())
 
-	for retryindex < retrylimit {
+	for retryIndex < retryLimit {
 
 		// call SelectService
-		svc, _ = harmonic.SelectService(cs, retryindex, svc)
+		svc, _ = harmonic.SelectService(cs, retryIndex, svc)
 
 		// send request to resource located at svc (e.g. execute query, or call external api)
 		response := makeRequestToSvc()
@@ -34,7 +34,7 @@ func main() {
 			break
 		} else { // if failed, then increment error for service and retryIndex
 			cs.IncrementError(svc)
-			retryindex++
+			retryIndex++
 		}
 	}
 }

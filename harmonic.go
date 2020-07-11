@@ -11,41 +11,41 @@ import (
 // is done, else weighted random service selection is done, where weights are inversely proportional
 // to error count on the particular service. If the request to the selected service fails, round robin
 // selection is done to deterministically select the next service.
-func SelectService(cs *ClusterState, retryindex int, prevservice string) (string, error) {
+func SelectService(cs *ClusterState, retryIndex int, prevService string) (string, error) {
 
 	//invalid num of endpoints
-	if cs.numservices == 0 {
-		return "", errors.New("harmonic: servicelist is empty")
+	if cs.numServices == 0 {
+		return "", errors.New("harmonic: service list is empty")
 	}
 
 	// single endpoint
-	if cs.numservices == 1 {
+	if cs.numServices == 1 {
 		return getIndexedService(cs, 0)
 	}
 
-	if retryindex == 0 { // first try
-		cs.remutex.Lock()
-		defer cs.remutex.Unlock()
+	if retryIndex == 0 { // first try
+		cs.reMutex.Lock()
+		defer cs.reMutex.Unlock()
 
-		maxerr := uint64(0)
+		maxErr := uint64(0)
 
-		for _, svc := range cs.servicelist {
-			errcnt := cs.errormap[svc]
-			effectiveerr := uint64(math.Floor(math.Pow(float64(1+errcnt), 1.5)))
-			if effectiveerr >= maxerr {
-				maxerr = effectiveerr
+		for _, svc := range cs.serviceList {
+			errCnt := cs.errorMap[svc]
+			effectiveErr := uint64(math.Floor(math.Pow(float64(1+errCnt), 1.5)))
+			if effectiveErr >= maxErr {
+				maxErr = effectiveErr
 			}
 		}
 
-		if maxerr == 1 {
-			return getIndexedService(cs, randomize(0, cs.numservices))
+		if maxErr == 1 {
+			return getIndexedService(cs, randomize(0, cs.numServices))
 		} else {
-			weights := make([]float64, cs.numservices)
-			prefixes := make([]float64, cs.numservices)
+			weights := make([]float64, cs.numServices)
+			prefixes := make([]float64, cs.numServices)
 
-			for i, svc := range cs.servicelist {
-				errcnt := cs.errormap[svc]
-				weights[i] = math.Ceil(float64(maxerr) / float64(errcnt+1))
+			for i, svc := range cs.serviceList {
+				errCnt := cs.errorMap[svc]
+				weights[i] = math.Ceil(float64(maxErr) / float64(errCnt+1))
 			}
 
 			for i, _ := range weights {
@@ -56,25 +56,25 @@ func SelectService(cs *ClusterState, retryindex int, prevservice string) (string
 				}
 			}
 
-			prlen := cs.numservices - 1
-			randx := randomize64(1, int64(prefixes[prlen])+1)
-			ceil := findCeilIn(randx, prefixes, 0, prlen)
+			prLen := cs.numServices - 1
+			randx := randomize64(1, int64(prefixes[prLen])+1)
+			ceil := findCeilIn(randx, prefixes, 0, prLen)
 
 			if ceil >= 0 {
 				return getIndexedService(cs, ceil)
 			}
 		}
 
-		return getIndexedService(cs, randomize(0, cs.numservices))
+		return getIndexedService(cs, randomize(0, cs.numServices))
 	} else { // retries
-		prevserviceindex := -1
-		for psi, svc := range cs.servicelist {
-			if svc == prevservice {
-				prevserviceindex = psi
+		prevServiceIndex := -1
+		for psi, svc := range cs.serviceList {
+			if svc == prevService {
+				prevServiceIndex = psi
 			}
 		}
 
-		return getIndexedService(cs, roundrobin(cs.numservices, prevserviceindex))
+		return getIndexedService(cs, roundrobin(cs.numServices, prevServiceIndex))
 	}
 }
 
@@ -103,11 +103,11 @@ func findCeilIn(randx int64, prefixes []float64, start int, end int) int {
 
 // getIndexedService returns service name at an index. Error is returned
 // if index is found to be invalid.
-func getIndexedService(cs *ClusterState, index int) (string, error) {
+func getIndexedService(cs *ClusterState, serviceIndex int) (string, error) {
 
-	if index < 0 || index >= cs.numservices {
+	if serviceIndex < 0 || serviceIndex >= cs.numServices {
 		return "", errors.New("harmonic: service index out of bounds")
 	}
 
-	return cs.servicelist[index], nil
+	return cs.serviceList[serviceIndex], nil
 }

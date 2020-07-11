@@ -6,46 +6,46 @@ import (
 )
 
 type ClusterState struct {
-	servicelist []string
-	numservices int
-	errormap    map[string]uint64
-	remutex     sync.Mutex
+	serviceList []string
+	numServices int
+	errorMap    map[string]uint64
+	reMutex     sync.Mutex
 }
 
 // InitClusterState initializes cluster state with user provided
-// servicelist, and zeroing error for each service.
-func InitClusterState(servicelist []string) (*ClusterState, error) {
+// serviceList, and zeroing error for each service.
+func InitClusterState(serviceList []string) (*ClusterState, error) {
 
-	if servicelist == nil || len(servicelist) == 0 {
+	if serviceList == nil || len(serviceList) == 0 {
 		return nil, errors.New("harmonic: invalid service list")
 	}
 
-	errormap := make(map[string]uint64)
-	for _, svc := range servicelist {
-		errormap[svc] = 0
+	errorMap := make(map[string]uint64)
+	for _, svc := range serviceList {
+		errorMap[svc] = 0
 	}
 
 	return &ClusterState{
-		servicelist: servicelist,
-		numservices: len(servicelist),
-		errormap:    errormap,
+		serviceList: serviceList,
+		numServices: len(serviceList),
+		errorMap:    errorMap,
 	}, nil
 }
 
 // GetServices returns current list of services.
 func (cs *ClusterState) GetServices() []string {
 
-	return cs.servicelist
+	return cs.serviceList
 }
 
 // GetError returns current errorcount for a service.
 func (cs *ClusterState) GetError(service string) (uint64, error) {
 
-	cs.remutex.Lock()
-	defer cs.remutex.Unlock()
+	cs.reMutex.Lock()
+	defer cs.reMutex.Unlock()
 
-	if _, ok := cs.errormap[service]; ok {
-		return cs.errormap[service], nil
+	if _, ok := cs.errorMap[service]; ok {
+		return cs.errorMap[service], nil
 	}
 	return 0, errors.New("harmonic: service " + service + " not found")
 }
@@ -53,11 +53,11 @@ func (cs *ClusterState) GetError(service string) (uint64, error) {
 // IncrementError increments errorcount by 1 for a service.
 func (cs *ClusterState) IncrementError(service string) error {
 
-	cs.remutex.Lock()
-	defer cs.remutex.Unlock()
+	cs.reMutex.Lock()
+	defer cs.reMutex.Unlock()
 
-	if _, ok := cs.errormap[service]; ok {
-		cs.errormap[service]++
+	if _, ok := cs.errorMap[service]; ok {
+		cs.errorMap[service]++
 		return nil
 	}
 	return errors.New("harmonic: service " + service + " not found")
@@ -66,11 +66,11 @@ func (cs *ClusterState) IncrementError(service string) error {
 // UpdateError updates user provided errorcount for a service.
 func (cs *ClusterState) UpdateError(service string, errorcount uint64) error {
 
-	cs.remutex.Lock()
-	defer cs.remutex.Unlock()
+	cs.reMutex.Lock()
+	defer cs.reMutex.Unlock()
 
-	if _, ok := cs.errormap[service]; ok {
-		cs.errormap[service] = errorcount
+	if _, ok := cs.errorMap[service]; ok {
+		cs.errorMap[service] = errorcount
 		return nil
 	}
 	return errors.New("harmonic: service " + service + " not found")
@@ -79,11 +79,11 @@ func (cs *ClusterState) UpdateError(service string, errorcount uint64) error {
 // ResetError resets errorcount for a service.
 func (cs *ClusterState) ResetError(service string) error {
 
-	cs.remutex.Lock()
-	defer cs.remutex.Unlock()
+	cs.reMutex.Lock()
+	defer cs.reMutex.Unlock()
 
-	if _, ok := cs.errormap[service]; ok {
-		cs.errormap[service] = 0
+	if _, ok := cs.errorMap[service]; ok {
+		cs.errorMap[service] = 0
 		return nil
 	}
 	return errors.New("harmonic: service " + service + " not found")
@@ -92,11 +92,11 @@ func (cs *ClusterState) ResetError(service string) error {
 // ResetAllErrors resets errorcount for all services.
 func (cs *ClusterState) ResetAllErrors() error {
 
-	cs.remutex.Lock()
-	defer cs.remutex.Unlock()
+	cs.reMutex.Lock()
+	defer cs.reMutex.Unlock()
 
-	for k, _ := range cs.errormap {
-		cs.errormap[k] = 0
+	for k, _ := range cs.errorMap {
+		cs.errorMap[k] = 0
 	}
 	return nil
 }
