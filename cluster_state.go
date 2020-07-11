@@ -32,6 +32,12 @@ func InitClusterState(servicelist []string) (*ClusterState, error) {
 	}, nil
 }
 
+// GetServices returns current list of services.
+func (cs *ClusterState) GetServices() []string {
+
+	return cs.servicelist
+}
+
 // GetError returns current errorcount for a service.
 func (cs *ClusterState) GetError(service string) (uint64, error) {
 

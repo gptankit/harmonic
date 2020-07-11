@@ -1,6 +1,9 @@
 package harmonic
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestServiceIndexWithinBoundR1(t *testing.T) {
 
@@ -100,6 +103,19 @@ func TestInitClusterState(t *testing.T) {
 	_, err := InitClusterState([]string{"s0", "s1", "s2"})
 	if err != nil {
 		t.Errorf("harmonic: init cluster state failed")
+	}
+}
+
+func TestGetServices(t *testing.T) {
+
+	cs, err := InitClusterState([]string{"s0", "s1", "s2"})
+	if err != nil {
+		return
+	}
+
+	servicelist := cs.GetServices()
+	if !reflect.DeepEqual(servicelist, []string{"s0", "s1", "s2"}) {
+		t.Errorf("harmonic: service list is incorrect")
 	}
 }
 

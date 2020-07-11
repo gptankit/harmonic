@@ -12,14 +12,20 @@ func main() {
 		return
 	}
 
-	retryindex, retrylimit, svc := 0, len(servicelist)-1, ""
+	// get a request to process (e.g. from a queue, or datastore, or client request if exposed as an api)
+	// req := getRequest()
 
-	for retryindex <= retrylimit {
+	// initialize parameters
+	retryindex, svc := 0, ""
+	// retrylimit is recommended to be equal to size of service list
+	retrylimit := len(cs.GetServices())
+
+	for retryindex < retrylimit {
 
 		// call SelectService
 		svc, _ = harmonic.SelectService(cs, retryindex, svc)
 
-		// send request to resource located at svc
+		// send request to resource located at svc (e.g. execute query, or call external api)
 		response := makeRequestToSvc()
 
 		// if success, then reset error for service and break
@@ -30,9 +36,6 @@ func main() {
 			cs.IncrementError(svc)
 			retryindex++
 		}
-
-		// optional (test for current errorcount for svc)
-		// ec, _ := cs.GetError(svc)
 	}
 }
 
