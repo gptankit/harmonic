@@ -24,10 +24,10 @@ Harmonic works on user-supplied cluster state which includes a list of services 
 
 <pre>
 // Initialize cluster state
-servicelist := []string{"s0", "s1", "s2"}
-cs, _ := harmonic.InitClusterState(servicelist)
+serviceList := []string{"s0", "s1", "s2"}
+cs, _ := harmonic.InitClusterState(serviceList)
 
-// Call SelectService with <i>retryindex</i>=0 and <i>prevservice</i>=""
+// Call SelectService with <i>retryIndex</i>=0 and <i>prevService</i>=""
 svc, _ := harmonic.SelectService(cs, 0, "")
 </pre>
 
@@ -38,7 +38,7 @@ The request can now be forwarded to the selected <i>svc</i>. Usually, the above 
 cs.ResetError(svc)
 </pre>
 
-As a good practice, it is advisable to do retries if the request to <i>svc</i> fails. The retry call to <i>SelectService</i> can be made after incrementing error count, incrementing <i>retryindex</i> and passing previously selected <i>svc</i> - 
+As a good practice, it is advisable to do retries if the request to <i>svc</i> fails. The retry call to <i>SelectService</i> can be made after incrementing error count, incrementing <i>retryIndex</i> and passing previously selected <i>svc</i> - 
 
 <pre>
 // Increment error count for a service
